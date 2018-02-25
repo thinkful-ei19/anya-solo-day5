@@ -14,6 +14,14 @@ const STORE = {
 
 
 function generateItemElement(item, itemIndex, template) {
+  let itemTitle = `<span class="shopping-item shopping-item__checked">${item.name}</span>`;
+    if (!item.checked) {
+      itemTitle = `
+        <form id="js-edit-item">
+          <input class="shopping-item type="text" value="${item.name}" />
+        </form>
+      `;
+    }
   return `
     <li class="js-item-index-element" data-item-index="${itemIndex}">
       <span class="shopping-item js-shopping-item ${item.checked ? 'shopping-item__checked' : ''}">${item.name}</span>
@@ -130,25 +138,43 @@ function findSearchItem(searchItemName) {
   }
 
 
-function hideCheckedItems() {
-    $('.js-shopping-list').on('click', '.js-item-toggle', event => {
-        console.log('`hideCheckeditems` ran');
-        const itemIndex = getItemIndexFromElement(event.currentTarget);
-        toggleCheckedForListItem(itemIndex);
-        const filteredSearch = STORE.items.filter(val => val.name === searchItemName) 
-      const shoppingListItemsString = generateShoppingItemsString(filteredSearch);
-      $('.js-shopping-list').html(shoppingListItemsString);
-      });
-}
+
+
+
+// function hideCheckedItems() {
+//   console.log('hide ran');
+//     $('.js-shopping-item').hasClass('shopping-item__checked').hide();
+//   }
+  
+
+
+
 function handleCheckBox() {
-    $('input[type=checkbox]').on('change', function(event) {
-    if ($('input[type=checkbox]').prop('checked')) {     
-            console.log('it is checked');
-            hideCheckedItems();
-    } else {
-        renderShoppingList();
-    }})
+  $('input[type=checkbox]').on('change', function(event) {
+  if ($('input[type=checkbox]').prop('checked')) {     
+          console.log('it is checked');
+          var item = $(this).closest('.container').find('.js-shopping-item');
+          if(item.hasClass('shopping-item__checked')){
+                 item.hide();
+          }
+  } else {
+      renderShoppingList();
+  }})
 }
+
+function editListItemName(id, itemName) {
+  const item = STORE.items.find(item => item.id === id);
+  item.name = itemName;
+}
+
+function handleEditShoppingItemSubmit() {
+  $('.js-shopping-list').on('submit', '#js-edit-item', event => {
+    event.preventDefault();
+    const id = getItemIdFromElement(event.currentTarget);
+    const itemName = $(event.currentTarget).find('.shopping-item').val();
+    editListItemName(id, itemName);
+    renderShoppingList();
+  });
 
 
 
@@ -162,9 +188,9 @@ function handleShoppingList() {
   handleItemCheckClicked();
   handleDeleteItemClicked();
   handleSearchedItemSubmit();
+  handleCheckBox();
+  handleEditShoppingItemSubmit()
 }
 
 // when the page loads, call `handleShoppingList`
 $(handleShoppingList);
-
-
